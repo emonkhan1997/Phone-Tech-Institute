@@ -1,0 +1,7 @@
+<!doctype html><html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Admin Login - Phone Tech</title><link rel="stylesheet" href="style.css"></head>
+<body style="background:#071a29;min-height:100vh;display:grid;place-items:center"><div style="width:min(420px,92%);background:#fff;padding:32px;border-radius:20px">
+<img src="assets/logo.jpg" style="width:80px;height:80px;object-fit:cover;border-radius:50%;display:block;margin:auto">
+<h2 style="text-align:center">Admin Login</h2><p style="text-align:center;color:#64748b">Phone Tech Servicing Institute</p>
+<form onsubmit="login(event)" style="display:grid;gap:12px"><input id="user" placeholder="Username" required><input id="pass" type="password" placeholder="Password" required><button class="btn primary">Login</button><div id="msg"></div></form>
+<p style="font-size:12px;color:#94a3b8">Demo credentials: admin / admin123</p><a href="index.html">← মূল ওয়েবসাইটে ফিরে যান</a></div>
+<script>function login(e){e.preventDefault();if(user.value==='admin'&&pass.value==='admin123'){location.href='dashboard.html'}else{msg.textContent='Username বা Password ভুল।';msg.style.color='crimson'}}</script></body></html>

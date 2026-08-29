@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="bn">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Admin Dashboard - Phone Tech</title>
+<link rel="stylesheet" href="style.css">
+<style>
+.admin-wrap{padding:45px 0}
+.admin-top{display:flex;justify-content:space-between;align-items:center;gap:15px;margin-bottom:25px;flex-wrap:wrap}
+.admin-actions{display:flex;gap:10px;flex-wrap:wrap}
+.table-wrap{overflow:auto;border:1px solid #dfe8ef;border-radius:15px;background:#fff}
+table{width:100%;border-collapse:collapse;min-width:1050px}
+th,td{padding:13px 12px;border-bottom:1px solid #e8eef3;text-align:left;vertical-align:top}
+th{background:#f3f8fb;color:#10243b}
+.status{display:inline-block;padding:5px 10px;border-radius:20px;font-size:12px;font-weight:800}
+.pending{background:#fff3cd;color:#856404}
+.paid{background:#d1fae5;color:#065f46}
+.rejected{background:#fee2e2;color:#991b1b}
+.small-btn{border:0;border-radius:7px;padding:7px 10px;cursor:pointer;font-weight:700;margin:2px}
+.paid-btn{background:#d1fae5;color:#065f46}
+.reject-btn{background:#fee2e2;color:#991b1b}
+.delete-btn{background:#e5e7eb;color:#374151}
+.empty{text-align:center;padding:35px;color:#64748b}
+.stats-admin{display:grid;grid-template-columns:repeat(3,1fr);gap:15px;margin-bottom:25px}
+.stat-box{padding:20px;border:1px solid #dfe8ef;border-radius:15px;background:#fff}
+.stat-box b{font-size:28px;display:block}
+@media(max-width:700px){.stats-admin{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<header class="header">
+  <div class="container nav">
+    <b>Phone Tech Admin Dashboard</b>
+    <a href="index.html">Website ↗</a>
+  </div>
+</header>
+
+<section class="section admin-wrap">
+<div class="container">
+
+  <div class="admin-top">
+    <div class="section-head" style="margin:0">
+      <span>ADMIN PANEL</span>
+      <h2>Student & Payment Management</h2>
+    </div>
+    <div class="admin-actions">
+      <button class="btn primary" onclick="loadApplications()">🔄 Refresh</button>
+      <button class="btn" style="background:#fee2e2;color:#991b1b" onclick="clearAll()">🗑️ Delete All</button>
+      <a class="btn" style="background:#10243b;color:#fff" href="index.html">← Website</a>
+    </div>
+  </div>
+
+  <div class="stats-admin">
+    <div class="stat-box"><span>Total Applications</span><b id="totalCount">0</b></div>
+    <div class="stat-box"><span>Pending Payments</span><b id="pendingCount">0</b></div>
+    <div class="stat-box"><span>Paid</span><b id="paidCount">0</b></div>
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Student</th>
+          <th>Phone</th>
+          <th>Course</th>
+          <th>bKash Sender</th>
+          <th>Transaction ID</th>
+          <th>Date</th>
+          <th>Payment</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="applicationTable"></tbody>
+    </table>
+  </div>
+
+</div>
+</section>
+
+<script src="script.js"></script>
+<script>
+function escapeHTML(value){
+  return String(value ?? "")
+    .replace(/&/g,"&amp;")
+    .replace(/</g,"&lt;")
+    .replace(/>/g,"&gt;")
+    .replace(/"/g,"&quot;")
+    .replace(/'/g,"&#039;");
+}
+
+function loadApplications(){
+  const apps = getApplications();
+  const table = document.getElementById("applicationTable");
+
+  document.getElementById("totalCount").textContent = apps.length;
+  document.getElementById("pendingCount").textContent =
+    apps.filter(a => (a.paymentStatus || "Pending") === "Pending").length;
+  document.getElementById("paidCount").textContent =
+    apps.filter(a => a.paymentStatus === "Paid").length;
+
+  if(!apps.length){
+    table.innerHTML =
+      '<tr><td colspan="9" class="empty">এখনও কোনো admission application পাওয়া যায়নি।</td></tr>';
+    return;
+  }
+
+  table.innerHTML = apps.map((app,index)=>{
+    const status = app.paymentStatus || "Pending";
+    const cls = status === "Paid" ? "paid" :
+                status === "Rejected" ? "rejected" : "pending";
+
+    return `
+      <tr>
+        <td>${index+1}</td>
+        <td>
+          <b>${escapeHTML(app.name)}</b>
+          ${app.message ? `<br><small>${escapeHTML(app.message)}</small>` : ""}
+        </td>
+        <td>${escapeHTML(app.phone)}</td>
+        <td>${escapeHTML(app.course)}</td>
+        <td>${escapeHTML(app.senderBkash || "-")}</td>
+        <td><b>${escapeHTML(app.transactionId || "-")}</b></td>
+        <td>${escapeHTML(app.submittedAt || "-")}</td>
+        <td><span class="status ${cls}">${escapeHTML(status)}</span></td>
+        <td>
+          <button class="small-btn paid-btn" onclick="changeStatus('${app.id}','Paid')">✓ Paid</button>
+          <button class="small-btn reject-btn" onclick="changeStatus('${app.id}','Rejected')">✕ Reject</button>
+          <button class="small-btn delete-btn" onclick="deleteApplication('${app.id}')">Delete</button>
+        </td>
+      </tr>`;
+  }).join("");
+}
+
+function changeStatus(id,status){
+  if(typeof updatePaymentStatus !== "function"){
+    alert("script.js-এর updatePaymentStatus function পাওয়া যায়নি।");
+    return;
+  }
+  if(!updatePaymentStatus(id,status)){
+    alert("Application পাওয়া যায়নি।");
+    return;
+  }
+  loadApplications();
+}
+
+function deleteApplication(id){
+  if(!confirm("এই application টি delete করতে চান?")) return;
+
+  const apps = getApplications().filter(
+    app => String(app.id) !== String(id)
+  );
+
+  localStorage.setItem("phoneTechApplications",JSON.stringify(apps));
+  loadApplications();
+}
+
+function clearAll(){
+  if(!confirm("সব student application এবং payment data delete করতে চান?")) return;
+  localStorage.removeItem("phoneTechApplications");
+  loadApplications();
+}
+
+document.addEventListener("DOMContentLoaded",loadApplications);
+</script>
+</body>
+</html>
