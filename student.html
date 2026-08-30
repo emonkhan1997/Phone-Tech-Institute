@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Student Portal - Phone Tech</title><link rel="stylesheet" href="style.css"></head>
+<body>
+<header class="header"><div class="container nav"><b>Phone Tech Student Portal</b><a href="index.html">Website</a></div></header>
+<section class="section"><div class="container" style="max-width:560px">
+<div class="section-head"><span>STUDENT PORTAL</span><h2 id="title">Student Login</h2></div>
+<div id="msg"></div>
+<form id="authForm" style="display:grid;gap:12px">
+<input id="name" placeholder="Student Name" style="display:none">
+<input id="studentId" placeholder="Student ID" required>
+<input id="email" type="email" placeholder="Email" required>
+<input id="password" type="password" placeholder="Password" required>
+<button class="btn primary" id="submitBtn">Login</button>
+</form>
+<div style="margin-top:16px;display:flex;gap:10px;flex-wrap:wrap">
+<button class="smallbtn" onclick="toggleMode()">Registration / Login</button>
+<button class="smallbtn" onclick="resetPassword()">Forgot Password</button>
+</div>
+<div id="panel" style="display:none;margin-top:25px"></div>
+</div></section>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+const SUPABASE_URL="https://qzqyxmjjrimhgdvwraad.supabase.co";
+const SUPABASE_KEY="sb_publishable_BWFkyuJdcqWLtKhpT6bsJg_y-P9kWsY";
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_KEY);
+let register=false;
+function msg(t,ok=false){const x=document.getElementById('msg');x.textContent=t;x.className='notice '+(ok?'success':'error')}
+function toggleMode(){register=!register; document.getElementById('title').textContent=register?'Student Registration':'Student Login'; document.getElementById('name').style.display=register?'block':'none'; document.getElementById('submitBtn').textContent=register?'Create Account':'Login';}
+async function resetPassword(){const email=document.getElementById('email').value.trim();if(!email)return msg('আগে Email দিন।');const {error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:location.origin+location.pathname});if(error)msg(error.message);else msg('Password reset link আপনার Email-এ পাঠানো হয়েছে।',true)}
+document.getElementById('authForm').onsubmit=async e=>{e.preventDefault();const email=document.getElementById('email').value.trim(),password=document.getElementById('password').value; if(register){const name=document.getElementById('name').value.trim(),studentId=document.getElementById('studentId').value.trim();const {data,error}=await sb.auth.signUp({email,password,options:{data:{name,student_id:studentId}}});if(error)return msg(error.message);msg('Registration সফল। Email verification প্রয়োজন হতে পারে।',true)}else{const {data,error}=await sb.auth.signInWithPassword({email,password});if(error)return msg(error.message);sessionStorage.setItem('pti_student','1');location.href='student-dashboard.html'}};
+</script></body></html>

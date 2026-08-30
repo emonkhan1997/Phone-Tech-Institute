@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="bn"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Student Dashboard - Phone Tech</title><link rel="stylesheet" href="style.css"></head>
+<body><header class="header"><div class="container nav"><b>Student Dashboard</b><div><a href="index.html">Website</a> <button class="smallbtn" onclick="logout()">Logout</button></div></div></header>
+<section class="section"><div class="container"><div class="section-head"><span>STUDENT</span><h2>আমার Dashboard</h2></div>
+<div id="info" class="notice">Loading...</div>
+<div class="cards" style="margin-top:20px"><div class="feature"><h3>📝 আবেদন</h3><p id="application">আবেদন তথ্য পাওয়া যাচ্ছে...</p></div><div class="feature"><h3>📊 ফলাফল</h3><p id="result">ফলাফল প্রকাশিত হলে এখানে দেখা যাবে।</p></div><div class="feature"><h3>🔑 Password</h3><p>নতুন Password দিতে নিচের ফর্ম ব্যবহার করুন।</p><form id="pw" style="display:grid;gap:8px"><input id="newpw" type="password" minlength="6" placeholder="নতুন Password" required><button class="btn primary">Change Password</button></form></div></div></div></section>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><script>
+const sb=window.supabase.createClient("https://qzqyxmjjrimhgdvwraad.supabase.co","sb_publishable_BWFkyuJdcqWLtKhpT6bsJg_y-P9kWsY");
+async function load(){const {data:{user}}=await sb.auth.getUser();if(!user)return location.href='student.html';document.getElementById('info').textContent='Logged in: '+(user.user_metadata?.name||user.email);document.getElementById('result').textContent='Result system database setup সম্পন্ন হলে আপনার Result এখানে দেখাবে।';document.getElementById('application').textContent='Application system database setup সম্পন্ন হলে আপনার আবেদন এখানে দেখাবে।'}
+document.getElementById('pw').onsubmit=async e=>{e.preventDefault();const {error}=await sb.auth.updateUser({password:document.getElementById('newpw').value});alert(error?error.message:'Password সফলভাবে পরিবর্তন হয়েছে।');e.target.reset()}
+async function logout(){await sb.auth.signOut();location.href='student.html'} load();
+</script></body></html>
